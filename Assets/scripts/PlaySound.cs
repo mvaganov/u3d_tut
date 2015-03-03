@@ -9,8 +9,11 @@ public class PlaySound : MonoBehaviour
 	public AudioClip sound;
 	[Tooltip("The name of a key press. See Edit->Project Settings->Input->Axes. Example: Fire1")]
 	public string buttonPress;
+	[Tooltip("Will make the noise restart after it ends. Used for looping music.")]
 	public bool loop = false;
+	/// <summary>used to check if a looping sound has started</summary>
 	bool played = false;
+	[Tooltip("How loud to make this noise. Should be between 0 and 1, with 0 off, and 1 at max vlume.")]
 	public float volume = 1;
 	
 	void Start()
@@ -23,8 +26,10 @@ public class PlaySound : MonoBehaviour
 	
 	void Update()
 	{
-		if (buttonPress != null && buttonPress.Length > 0
-		&& Input.GetButtonDown(buttonPress) && !loop || !played)
+		// if the button was pressed
+		if (buttonPress != null && buttonPress.Length > 0 && Input.GetButtonDown(buttonPress)
+		// and this noise is not currently looping
+		&& (!loop || !played))
 		{
 			Play(sound, transform, loop, volume);
 			played = true;

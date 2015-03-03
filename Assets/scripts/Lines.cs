@@ -7,9 +7,11 @@ public class Lines : MonoBehaviour {
 	
 	/// <summary>The singleton instance.</summary>
 	static Lines instance;
-	
+
+	/// <returns>the global singleton object, or creates one if it is missing.</returns>
 	public static Lines GetGlobal() {
 		if(instance == null) {
+			// note: checking all objects like this is slow
 			Object[] objects = Resources.FindObjectsOfTypeAll(typeof(GameObject));
 			for (int i = 0; instance == null && i < objects.Length; ++i) {
 				if (objects[i] is GameObject) {
@@ -21,12 +23,12 @@ public class Lines : MonoBehaviour {
 				GameObject g = new GameObject();
 				instance = g.AddComponent<Lines>();
 				g.name = "<"+instance.GetType().Name+">";
-				Debug.LogWarning("Created "+g.name);
+				Debug.LogWarning("Created "+g.name+". Consider creating an empty object with the Lines script, and assigning the line material to a white Self-Illumin/Diffuse shader.");
 			}
 		}
 		return instance;
 	}
-	
+
 	/// <summary>
 	/// Make the specified Line.
 	/// example usage:
