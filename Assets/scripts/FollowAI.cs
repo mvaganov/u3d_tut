@@ -19,11 +19,14 @@ public class FollowAI : MonoBehaviour {
 		Vector3 unitVector = delta.normalized;
 		Lines.Make (ref unitV, Color.green, transform.position, 
 		           transform.position + unitVector, 2, 0);
-		CharacterController cm = GetComponent<CharacterController> ();
-		if(cm == null) {
-			transform.position += unitVector * speed * Time.deltaTime; // move through air
-		} else {
-			cm.SimpleMove(unitVector * speed);	// move on ground with CharacterController
+		if(distance > 5)
+		{
+			CharacterController cm = GetComponent<CharacterController> ();
+			if(cm == null) {
+				transform.position += unitVector * speed * Time.deltaTime; // move through air
+			} else {
+				cm.SimpleMove(unitVector * speed);	// move on ground with CharacterController
+			}
 		}
 		Lines.Make (ref forwardVector, Color.blue, transform.position,
 		           transform.position + transform.forward, .2f, .2f);
