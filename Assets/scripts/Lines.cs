@@ -1,7 +1,31 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Lines {
+public class Lines : MonoBehaviour {
+	[Tooltip("How to draw the line. Ideally set to a white, Self-Illumin/Diffuse shader.")]
+	public Material lineMaterial;
+	
+	/// <summary>The singleton instance.</summary>
+	static Lines instance;
+	
+	public static Lines GetGlobal() {
+		if(instance == null) {
+			Object[] objects = Resources.FindObjectsOfTypeAll(typeof(GameObject));
+			for (int i = 0; instance == null && i < objects.Length; ++i) {
+				if (objects[i] is GameObject) {
+					GameObject go = (GameObject)objects[i];
+					instance = go.GetComponent<Lines>();
+				}
+			}
+			if(instance == null) {
+				GameObject g = new GameObject();
+				instance = g.AddComponent<Lines>();
+				g.name = "<"+instance.GetType().Name+">";
+				Debug.LogWarning("Created "+g.name);
+			}
+		}
+		return instance;
+	}
 	
 	/// <summary>
 	/// Make the specified Line.
@@ -70,12 +94,17 @@ public class Lines {
 	
 	public static void SetColor(LineRenderer lr, Color color)
 	{
-		const string colorShaderName = "Self-Illumin/Diffuse";
-		if(lr.material == null || lr.material.name != colorShaderName)
+		Material mat = GetGlobal ().lineMaterial;
+		if(mat == null) {
+			// Shader.Find won't export well! For most platforms, create a global
+			// Lines object, and assign a line material
+			const string colorShaderName = "Self-Illumin/Diffuse";
+			mat = new Material(Shader.Find(colorShaderName));
+			GetGlobal().lineMaterial = mat;
+		}
+		if(lr.material == null || lr.material.name != mat.name)
 		{
-			// Shader.Find won't export well! For most platforms, consider a
-			// reference passed through a global variable
-			lr.material = new Material(Shader.Find(colorShaderName));
+			lr.material = mat;//Shader.Find(colorShaderName));
 		}
 		lr.material.color = color;
 	}
@@ -147,5 +176,54 @@ public class Lines {
 		         angle, centerPosition);
 		return Make (ref lineObject, color, points, pointCount, startSize,
 		             endSize);
+	}
+	
+	/// <summary>
+	/// Quick! Make a circle! Radius 1, face along z axis, line width of .1
+	/// </summary>
+	/// <returns>The circle.</returns>
+	/// <param name="lineObject">Line object.</param>
+	/// <param name="color">Color.</param>
+	/// <param name="centerPosition">Center position.</param>
+	public static LineRenderer MakeCircle(ref GameObject lineObject, Color color,
+	                                      Vector3 centerPosition) {
+		return Lines.MakeCircle(ref lineObject, color, centerPosition, 
+		                        Vector3.forward, 1, .1f);
+	}
+	
+	/// <summary>
+	/// Makes a circle that is pointing along the z axis.
+	/// </summary>
+	/// <returns>The circle.</returns>
+	/// <param name="lineObject">Line object.</param>
+	/// <param name="color">Color.</param>
+	/// <param name="centerPosition">Center position.</param>
+	/// <param name="radius">Radius.</param>
+	/// <param name="linesize">Linesize.</param>
+	public static LineRenderer MakeCircle(ref GameObject lineObject, Color color,
+	                                      Vector3 centerPosition, float radius, 
+	                                      float linesize) {
+		return Lines.MakeCircle(ref lineObject, color, centerPosition, 
+		                        Vector3.forward, radius, linesize);
+	}
+	
+	/// <summary>
+	/// Makes a circle that is pointing along the z axis.
+	/// </summary>
+	/// <returns>The circle.</returns>
+	/// <param name="lineObject">Line object.</param>
+	/// <param name="color">Color.</param>
+	/// <param name="centerPosition">Center position.</param>
+	/// <param name="normal">Normal : which way the circle is facing</param>
+	/// <param name="radius">Radius.</param>
+	/// <param name="linesize">Linesize.</param>
+	public static LineRenderer MakeCircle(ref GameObject lineObject, Color color,
+	                                      Vector3 centerPosition, Vector3 normal, float radius, 
+	                                      float linesize) {
+		Vector3 crossDir = (normal != Vector3.up) ? Vector3.up : Vector3.forward;
+		Vector3 r = Vector3.Cross(normal, crossDir).normalized;
+		return Lines.MakeArc(ref lineObject, color, centerPosition, 
+		                     normal, r * radius, 360, 24, 
+		                     linesize, linesize);
 	}
 }
